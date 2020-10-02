@@ -146,6 +146,22 @@ int main(){
 				}while(ret != EOF);
 				fclose(store);
 			}
+			//////////
+			store = NULL;
+			store = fopen(status, "r");
+			if(store != NULL){
+				char data[100];
+				while(fgets(data, sizeof(data), store)){
+					char* part = strtok(data, "\t");
+					if(strcmp(part, "voluntary_ctxt_switches:") == 0){
+						printf("voluntary_ctxt_switches:\t%s\n", strtok(strtok(NULL, "\t"), "\n"));
+					}
+					else if(strcmp(part, "nonvoluntary_ctxt_switches:") == 0){
+						printf("nonvoluntary_ctxt_switches:\t%s\n", strtok(strtok(NULL, "\t"), "\n"));
+					}
+				}
+				fclose(store);
+			}
 		}else{
       if(lastest_pwd!=NULL)
       {
