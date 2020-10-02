@@ -112,26 +112,40 @@ int main(){
 			bg_signal_control(pid_num,bglist,part,max_index_bglist);
 		}
 		else if((part!=NULL&&strcmp(part,"pstat")==0)){
-			char *pstat_pid_number=strtok(NULL, " ");
-			char* pstat_list[5];
-			pstat_list[0]="ps";
-			pstat_list[1]="-o";
-			pstat_list[2]="comm,state,utime,stime,rss,nvcsw,nivcsw";
-			pstat_list[3]=pstat_pid_number;
-			pstat_list[4]=NULL;
-			/////////
-
-			pid_t pid;
-			pid = fork(); //create 2 processes
-			if (pid == 0) //child process
-			{
-				execvp(pstat_list[0], pstat_list);
-			}else
-			{
-				waitpid(pid,0,0); // wait for the child process
+			char *temp_pid_num=strtok(NULL, " ");
+			int pid=atoi(temp_pid_num);
+			char stat[256];
+			char status[256];
+			sprintf(stat, "/proc/%d/stat", pid);
+			sprintf(status, "/proc/%d/status", pid);
+			FILE* store = fopen(stat, "r");
+			if(store != NULL){
+				char ret = 0;
+				char data[100];
+				int command_position = 1;
+				do{
+					ret = fscanf(store, "%s", data);
+					if(command_position == 2){
+						printf("comm:\t%s\n", data);
+					}
+					if(command_position == 3){
+						printf("state:\t%s\n", data);
+					}
+					if(command_position == 14){
+						float utime = atof(data)/sysconf(_SC_CLK_TCK);
+						printf("utime:\t%f\n", utime);
+					}
+					if(command_position == 15){
+						float stime = atof(data)/sysconf(_SC_CLK_TCK);
+						printf("stime:\t%f\n", stime);
+					}
+					if(command_position == 24){
+						printf("rss:\t%s\n", data);
+					}
+					command_position++;
+				}while(ret != EOF);
+				fclose(store);
 			}
-			/////////
-
 		}else{
       if(lastest_pwd!=NULL)
       {
