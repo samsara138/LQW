@@ -40,7 +40,7 @@ void bg_work(char *list[],int bglist[],int *index,char pathlist[][80]){
 void bg_list(int bglist[],char pathlist[][80],int index){
 	int total_job=0;
 	for(int i=0;i<index;i++){
-		if(bglist[i]!=-1){
+		if(bglist[i]!=-1){ //we don't print the process that has been done or terminated
 			printf("%d : %s\n",bglist[i],pathlist[i]);
 			total_job++;
 		}
@@ -114,40 +114,50 @@ int main(){
 		else if((part!=NULL&&strcmp(part,"pstat")==0)){
 			char *temp_pid_num=strtok(NULL, " ");
 			int pid=atoi(temp_pid_num);
+			int flag_pid=0;
+			for(int i=0;i<max_index_bglist;i++){
+				if(bglist[i]==pid){
+					flag_pid=1;
+				}
+			}
+			if(flag_pid==0){
+				printf("Error: Process %d does not exist.\n",pid);
+			}else{
 			char stat[256];
-			char status[256];
 			sprintf(stat, "/proc/%d/stat", pid);
-			sprintf(status, "/proc/%d/status", pid);
-			FILE* store = fopen(stat, "r");
+			FILE* store = fopen(stat, "r"); //read the /proc/%d/stat first to get information
 			if(store != NULL){
-				char ret = 0;
+				char read = 0;
 				char data[100];
 				int command_position = 1;
-				do{
-					ret = fscanf(store, "%s", data);
-					if(command_position == 2){
-						printf("comm:%s\n", data);
-					}
-					if(command_position == 3){
-						printf("state:%s\n", data);
-					}
-					if(command_position == 14){
-						float utime = atof(data)/sysconf(_SC_CLK_TCK);
-						printf("utime:%f\n", utime);
-					}
-					if(command_position == 15){
-						float stime = atof(data)/sysconf(_SC_CLK_TCK);
-						printf("stime:%f\n", stime);
-					}
-					if(command_position == 24){
-						printf("rss:%s\n", data);
-					}
-					command_position++;
-				}while(ret != EOF);
-				fclose(store);
+				read = fscanf(store, "%s", data);
+				while(read != EOF){ //in this file,we know the exact number icon of each option, so we could use a index++ coming with the read to know when is the time to print data
+				if(command_position == 2){
+					printf("comm:%s\n", data);
+				}
+				if(command_position == 3){
+					printf("state:%s\n", data);
+				}
+				if(command_position == 14){
+					float utime = atof(data)/sysconf(_SC_CLK_TCK);
+					printf("utime:%f\n", utime);
+				}
+				if(command_position == 15){
+					float stime = atof(data)/sysconf(_SC_CLK_TCK);
+					printf("stime:%f\n", stime);
+				}
+				if(command_position == 24){
+					printf("rss:%s\n", data);
+				}
+				command_position++;
+				read = fscanf(store, "%s", data);
+			}
+			fclose(store);
 			}
 			//////////
-			store = NULL;
+			store = NULL;  //now we need the ctxt information , we reset it first
+			char status[256];
+			sprintf(status, "/proc/%d/status", pid);
 			store = fopen(status, "r");
 			if(store != NULL){
 				char data[100];
@@ -162,6 +172,7 @@ int main(){
 				}
 				fclose(store);
 			}
+		}
 		}else{
       if(lastest_pwd!=NULL)
       {
@@ -183,10 +194,10 @@ int main(){
 			  if(bglist[i]==retVal){
 					if(WIFSIGNALED(status)){
 						printf("Process %d is killed by signal\n",bglist[i]);
-						bglist[i]=-1;
+						bglist[i]=-1; // indicate that the process is killed
 					}
 			 	 if(WIFEXITED(status)){
-			 	 		bglist[i]=-1;
+			 	 		bglist[i]=-1; // indicate that the process is done
 			  	}
 			  }
 			}
