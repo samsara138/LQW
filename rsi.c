@@ -126,21 +126,21 @@ int main(){
 				do{
 					ret = fscanf(store, "%s", data);
 					if(command_position == 2){
-						printf("comm:\t%s\n", data);
+						printf("comm:%s\n", data);
 					}
 					if(command_position == 3){
-						printf("state:\t%s\n", data);
+						printf("state:%s\n", data);
 					}
 					if(command_position == 14){
 						float utime = atof(data)/sysconf(_SC_CLK_TCK);
-						printf("utime:\t%f\n", utime);
+						printf("utime:%f\n", utime);
 					}
 					if(command_position == 15){
 						float stime = atof(data)/sysconf(_SC_CLK_TCK);
-						printf("stime:\t%f\n", stime);
+						printf("stime:%f\n", stime);
 					}
 					if(command_position == 24){
-						printf("rss:\t%s\n", data);
+						printf("rss:%s\n", data);
 					}
 					command_position++;
 				}while(ret != EOF);
